@@ -93,9 +93,14 @@ func (w *RotateWriter) openFile() (*os.File, error) {
 			return nil, err
 		}
 	}
-	// File is symlinke. it's should be error
-	if fi, err := os.Lstat(w.Filename); err == nil && fi.Mode()&os.ModeSymlink != 0 {
-		return nil, fmt.Errorf("file is a symlink: %s", w.Filename)
+	// Return an error if the target path is a symlink.
+	fi, err := os.Lstat(w.Filename)
+	if err == nil {
+		if fi.Mode()&os.ModeSymlink != 0 {
+			return nil, fmt.Errorf("file is a symlink: %s", w.Filename)
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, err
 	}
 	return os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 }
