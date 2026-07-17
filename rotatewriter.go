@@ -1,7 +1,6 @@
 package rotatewriter
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -74,35 +73,45 @@ func New(ops ...WriterOption) (*RotateWriter, error) {
 	w.ext = filepath.Ext(w.Filename)
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	file, err := w.openFile()
+	err := w.openFile()
 	if err != nil {
 		return nil, err
 	}
-	w.file = file
-	fi, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-	w.currentSize = fi.Size()
 	return w, nil
 }
 
-func (w *RotateWriter) openFile() (*os.File, error) {
+func (w *RotateWriter) openFile() error {
 	if w.AutoDirCreate {
 		if err := os.MkdirAll(w.dir, 0755); err != nil {
-			return nil, err
+			return err
 		}
 	}
 	// File is symlinke. it's should be error
 	if fi, err := os.Lstat(w.Filename); err == nil && fi.Mode()&os.ModeSymlink != 0 {
-		return nil, fmt.Errorf("file is a symlink: %s", w.Filename)
+		return fmt.Errorf("file is a symlink: %s", w.Filename)
 	}
-	return os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	file, err := os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	fi, err := file.Stat()
+	if err != nil {
+		file.Close()
+		return err
+	}
+	w.file = file
+	w.currentSize = fi.Size()
+	return nil
 }
 
 func (w *RotateWriter) Write(p []byte) (int, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+	if w.file == nil {
+		if err := w.openFile(); err != nil {
+			return 0, err
+		}
+	}
 	if w.currentSize+int64(len(p)) >= int64(w.MaxSize*1024*1024) {
 		if err := w.rotate(); err != nil {
 			return 0, err
@@ -118,10 +127,9 @@ func (w *RotateWriter) Write(p []byte) (int, error) {
 
 func (w *RotateWriter) rotate() error {
 	if err := w.file.Close(); err != nil {
-		// ignore error if file is already closed
-		if !errors.Is(err, os.ErrClosed) {
-			return err
-		}
+		w.file = nil
+		w.currentSize = 0
+		return err
 	}
 
 	currentLog := filepath.Join(w.dir, fmt.Sprintf("%s%s", w.basename, w.ext))
@@ -162,12 +170,9 @@ func (w *RotateWriter) rotate() error {
 		}
 	}
 
-	file, err := w.openFile()
-	if err != nil {
+	if err := w.openFile(); err != nil {
 		return err
 	}
-	w.file = file
-	w.currentSize = 0
 	return nil
 }
 
@@ -175,7 +180,10 @@ func (w *RotateWriter) Close() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.file != nil {
-		return w.file.Close()
+		err := w.file.Close()
+		w.file = nil
+		w.currentSize = 0
+		return err
 	}
 	return nil
 }
