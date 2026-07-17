@@ -1,3 +1,3 @@
-module github.com/kazeburo/rotatewriter
+module github.com/monitoring-forge/rotatewriter
 
-go 1.25.0
+go 1.25
