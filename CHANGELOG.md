@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.6](https://github.com/monitoring-forge/rotatewriter/compare/v0.0.5...v0.0.6) - 2026-07-17
+
+- Change module name from kazeburo to monitoring-forge by @kazeburo in https://github.com/monitoring-forge/rotatewriter/pull/26
+
 ## [v0.0.5](https://github.com/monitoring-forge/rotatewriter/compare/v0.0.4...v0.0.5) - 2026-07-17
 
 - keep import path kazeburo by @kazeburo in https://github.com/monitoring-forge/rotatewriter/pull/24
