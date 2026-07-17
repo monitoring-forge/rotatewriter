@@ -95,12 +95,12 @@ func (w *RotateWriter) openFile() error {
 		return err
 	}
 
-	file, err := os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	file, err := openFile(w.Filename)
 	if err != nil {
 		return err
 	}
 
-	fi, err = file.Stat()
+	fi, err := file.Stat()
 	if err != nil {
 		file.Close()
 		return err
@@ -115,9 +115,7 @@ func (w *RotateWriter) Write(p []byte) (int, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.file == nil {
-		if err := w.openFile(); err != nil {
-			return 0, err
-		}
+		return 0, fmt.Errorf("file is not open")
 	}
 	if w.currentSize+int64(len(p)) >= int64(w.MaxSize*1024*1024) {
 		if err := w.rotate(); err != nil {
