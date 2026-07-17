@@ -92,7 +92,7 @@ func TestRotateWriter_SymlinkError(t *testing.T) {
 	// Create a symlink
 	symlinkPath := filepath.Join(dir, "symlink.log")
 	if err := os.Symlink(filename, symlinkPath); err != nil {
-		t.Fatalf("failed to create symlink: %v", err)
+		t.Skipf("skipping: unable to create symlink on this platform (or due to permissions): %v", err)
 	}
 	_, err := New(Filename(symlinkPath), MaxSize(1), MaxBackups(1), AutoDirCreate(true))
 	if err == nil {
