@@ -86,20 +86,18 @@ func (w *RotateWriter) openFile() error {
 			return err
 		}
 	}
-	file, err := os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
+	// Return an error if the target path is a symlink.
+	if fi, err := os.Lstat(w.Filename); err == nil {
+		if fi.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("file is a symlink: %s", w.Filename)
+		}
+	} else if !os.IsNotExist(err) {
 		return err
 	}
 
-	// Return an error if the target path is a symlink.
-	fi, err := os.Lstat(w.Filename)
+	file, err := os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		file.Close()
 		return err
-	}
-	if fi.Mode()&os.ModeSymlink != 0 {
-		file.Close()
-		return fmt.Errorf("file is a symlink: %s", w.Filename)
 	}
 
 	fi, err = file.Stat()
@@ -140,7 +138,8 @@ func (w *RotateWriter) rotate() error {
 		w.currentSize = 0
 		return err
 	}
-
+	w.file = nil
+	w.currentSize = 0
 	currentLog := filepath.Join(w.dir, fmt.Sprintf("%s%s", w.basename, w.ext))
 	backupLog := filepath.Join(w.dir, fmt.Sprintf("%s-%d%s", w.basename, time.Now().UnixNano(), w.ext))
 	if err := os.Rename(currentLog, backupLog); err != nil {
