@@ -95,12 +95,13 @@ func TestRotateWriter_SymlinkError(t *testing.T) {
 		t.Skipf("skipping: unable to create symlink on this platform (or due to permissions): %v", err)
 	}
 	_, err := New(Filename(symlinkPath), MaxSize(1), MaxBackups(1), AutoDirCreate(true))
-	if err == nil {
-		t.Fatal("expected error when creating RotateWriter with symlink, got nil")
+	if err == nil || !strings.Contains(err.Error(), "symlink") {
+		t.Fatalf("expected symlink error when creating RotateWriter with symlink, got: %v", err)
 	}
 
-	_, err = New(Filename(filename), MaxSize(1), MaxBackups(1), AutoDirCreate(true))
+	w, err := New(Filename(filename), MaxSize(1), MaxBackups(1), AutoDirCreate(true))
 	if err != nil {
 		t.Fatalf("failed to create RotateWriter with regular file: %v", err)
 	}
+	defer w.Close()
 }
