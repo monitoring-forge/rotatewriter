@@ -1,7 +1,6 @@
 package rotatewriter
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -87,24 +86,28 @@ func (w *RotateWriter) openFile() error {
 			return err
 		}
 	}
-	// Return an error if the target path is a symlink.
-	fi, err := os.Lstat(w.Filename)
-	if err == nil {
-		if fi.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("file is a symlink: %s", w.Filename)
-		}
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
 	file, err := os.OpenFile(w.Filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}
+
+	// Return an error if the target path is a symlink.
+	fi, err := os.Lstat(w.Filename)
+	if err != nil {
+		file.Close()
+		return err
+	}
+	if fi.Mode()&os.ModeSymlink != 0 {
+		file.Close()
+		return fmt.Errorf("file is a symlink: %s", w.Filename)
+	}
+
 	fi, err = file.Stat()
 	if err != nil {
 		file.Close()
 		return err
 	}
+
 	w.file = file
 	w.currentSize = fi.Size()
 	return nil
