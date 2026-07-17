@@ -102,7 +102,9 @@ func (w *RotateWriter) openFile() error {
 
 	fi, err := file.Stat()
 	if err != nil {
-		file.Close()
+		if cerr := file.Close(); cerr != nil {
+			return fmt.Errorf("stat failed: %w (close failed: %v)", err, cerr)
+		}
 		return err
 	}
 
