@@ -1,3 +1,3 @@
-module github.com/monitoring-forge/rotatewriter
+module github.com/kazeburo/rotatewriter
 
 go 1.25
