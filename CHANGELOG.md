@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.4](https://github.com/monitoring-forge/rotatewriter/compare/v0.0.3...v0.0.4) - 2026-07-17
+
+- repository transfer and improve security, file and error handling by @kazeburo in https://github.com/monitoring-forge/rotatewriter/pull/22
+
 ## [v0.0.3](https://github.com/kazeburo/rotatewriter/compare/v0.0.2...v0.0.3) - 2026-07-03
 
 - pin actions commithash by @kazeburo in https://github.com/kazeburo/rotatewriter/pull/4
