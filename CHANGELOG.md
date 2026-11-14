@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.0.10](https://github.com/monitoring-forge/rotatewriter/compare/v0.0.9...v0.0.10) - 2026-11-14
+
+- ci: bump Songmu/tagpr from 1.21.4 to 1.22.0 in the tagpr group by @dependabot[bot] in https://github.com/monitoring-forge/rotatewriter/pull/55
+- go: bump github.com/monitoring-forge/saferio from 0.0.3 to 0.0.4 in the dependencies group by @dependabot[bot] in https://github.com/monitoring-forge/rotatewriter/pull/54
+
 ## [v0.0.9](https://github.com/monitoring-forge/rotatewriter/compare/v0.0.8...v0.0.9) - 2026-10-31
 
 - ci: bump the-pr-agent/pr-agent from 0.41.1 to 0.42.0 in the dependencies group by @dependabot[bot] in https://github.com/monitoring-forge/rotatewriter/pull/36
